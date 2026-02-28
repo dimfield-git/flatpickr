@@ -1,0 +1,1658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flatpickr — Bluegrass Jam Workstation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   FLATPICKR DESIGN SYSTEM
+   Four themes: 2 dark (Olive, Moss), 2 light (Parchment, Herb)
+   ============================================================ */
+:root {
+  --bg:       #1E1E22;
+  --panel:    #28282E;
+  --panel2:   #232329;
+  --surface:  #2E3828;
+  --text:     #D8D8D8;
+  --muted:    #888890;
+  --line:     #3A3A42;
+  --accent:   #E8A445;
+  --accent2:  #A0D4A0;
+  --warn:     #cf6b5e;
+  --glow:     rgba(232,164,69,.12);
+  --shadow:   0 8px 32px rgba(0,0,0,.40);
+
+  --logo: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  --sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+
+  --radius:   10px;
+  --radius-lg:16px;
+}
+
+/* ---- Dark: Olive (default) ---- */
+body[data-theme="olive"] {
+  --bg:#1E1E22; --panel:#28282E; --panel2:#232329; --surface:#2E3828;
+  --text:#D8D8D8; --muted:#888890; --line:#3A3A42;
+  --accent:#E8A445; --accent2:#A0D4A0; --warn:#cf6b5e;
+  --glow:rgba(232,164,69,.12); --shadow:0 8px 32px rgba(0,0,0,.40);
+}
+
+/* ---- Dark: Moss ---- */
+body[data-theme="moss"] {
+  --bg:#1a2119; --panel:#242d23; --panel2:#1f2820;  --surface:#2C3E2D;
+  --text:#E8F0DC; --muted:#6B7F6C; --line:#3a4a3b;
+  --accent:#A8C256; --accent2:#3D6B4F; --warn:#c17a3a;
+  --glow:rgba(168,194,86,.10); --shadow:0 8px 32px rgba(0,0,0,.45);
+}
+
+/* ---- Light: Parchment ---- */
+body[data-theme="parchment"] {
+  --bg:#f5f0e6; --panel:#fdfaf3; --panel2:#ede7d9; --surface:#e0d8c8;
+  --text:#2c2620; --muted:#8a7e6e; --line:#d4cbb8;
+  --accent:#b8872e; --accent2:#5a7a4a; --warn:#c05a4a;
+  --glow:rgba(184,135,46,.08); --shadow:0 6px 20px rgba(0,0,0,.07);
+}
+
+/* ---- Light: Herb ---- */
+body[data-theme="herb"] {
+  --bg:#F4F7F2; --panel:#ffffff; --panel2:#E8F0DC; --surface:#d8e4ca;
+  --text:#2C3E2D; --muted:#6B7F6C; --line:#cfdacb;
+  --accent:#A8C256; --accent2:#3D6B4F; --warn:#c17a3a;
+  --glow:rgba(138,173,60,.08); --shadow:0 6px 20px rgba(0,0,0,.06);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   HEADER BAR
+   ============================================================ */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1520px; margin: 0 auto;
+  padding: 10px 16px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+}
+
+/* ---- LOGO ---- */
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  white-space: nowrap; margin-right: 6px;
+}
+.logo-text {
+  font-family: var(--logo);
+  font-weight: 700; font-size: 22px;
+  letter-spacing: .3px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo-pick {
+  width: 20px; height: 22px; position: relative;
+}
+.logo-pick::before {
+  content: '';
+  position: absolute; top: 0; left: 2px;
+  width: 16px; height: 18px;
+  background: var(--accent);
+  clip-path: polygon(50% 100%, 0 20%, 15% 0, 85% 0, 100% 20%);
+  opacity: .9;
+}
+.logo-pick::after {
+  content: '';
+  position: absolute; top: 3px; left: 5px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--accent) 50%, #000);
+}
+.logo-sub {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  letter-spacing: .5px; margin-left: -4px;
+}
+
+/* ---- pills / buttons ---- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); font-size: 12px;
+}
+.pill label { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.pill input, .pill select {
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel2); color: var(--text);
+  padding: 4px 7px; font-size: 12px; outline: none;
+  font-family: var(--mono);
+}
+.pill input[type="text"] { min-width: 120px; font-family: var(--sans); }
+.pill input[type="number"] { width: 56px; }
+
+.btn {
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--text);
+  padding: 6px 11px; font-size: 12px;
+  cursor: pointer; user-select: none;
+  font-family: var(--sans); font-weight: 500;
+  transition: background .1s, border-color .1s, transform .06s;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.on {
+  background: color-mix(in oklab, var(--accent2) 18%, var(--panel));
+  border-color: var(--accent2); color: var(--accent2);
+}
+.btn.hot {
+  background: color-mix(in oklab, var(--accent) 15%, var(--panel));
+  border-color: var(--accent); color: var(--accent);
+}
+.btn.danger {
+  background: color-mix(in oklab, var(--warn) 12%, var(--panel));
+  border-color: var(--warn); color: var(--warn);
+}
+
+.spacer { flex: 1; min-width: 8px; }
+
+/* ---- Theme swatches ---- */
+.themes { display: flex; gap: 4px; align-items: center; }
+.themes .swatch {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--line); cursor: pointer;
+  transition: border-color .15s, transform .1s;
+}
+.themes .swatch:hover { transform: scale(1.15); }
+.themes .swatch.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+.themes .swatch-label {
+  font-size: 10px; color: var(--muted); font-family: var(--mono);
+}
+
+/* ============================================================
+   CONTROLS ROW
+   ============================================================ */
+.controls-row {
+  max-width: 1520px; margin: 0 auto;
+  padding: 6px 16px 8px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  border-bottom: 1px solid color-mix(in oklab, var(--line) 50%, transparent);
+}
+.metro-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted); display: inline-block;
+  transition: background .05s, box-shadow .05s;
+  margin-right: 4px; vertical-align: middle;
+}
+.metro-dot.pulse {
+  background: var(--accent2);
+  box-shadow: 0 0 10px var(--accent2);
+}
+.metro-label { font-size: 12px; }
+.metro-label.running { color: var(--accent2); font-weight: 600; }
+
+.hint { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+kbd {
+  font-family: var(--mono); font-size: 10px;
+  border: 1px solid var(--line); background: var(--panel2);
+  padding: 1px 5px; border-radius: 4px; color: var(--text);
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   Editor takes most width, sidebar on right.
+   ============================================================ */
+.main {
+  max-width: 1520px; margin: 0 auto;
+  padding: 14px 16px 60px;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 14px;
+}
+@media (max-width: 1100px) { .main { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   CARD
+   ============================================================ */
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex; gap: 8px; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--panel2) 50%, transparent), transparent);
+}
+.card-head b { font-size: 13px; }
+
+/* ============================================================
+   EDITOR LAYOUT — note tray | tabs+measures
+   ============================================================ */
+.editor-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+/* ---- NOTE TYPE TRAY (left of tabs) ---- */
+.note-tray {
+  border-right: 1px solid var(--line);
+  padding: 8px 6px;
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: center;
+  background: color-mix(in oklab, var(--panel2) 40%, var(--panel));
+}
+.note-tray-label {
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 2px; writing-mode: horizontal-tb;
+}
+.note-btn {
+  width: 36px; height: 34px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel2); color: var(--text);
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1;
+  transition: background .1s, border-color .1s;
+  position: relative;
+}
+.note-btn:hover { border-color: var(--accent); }
+.note-btn.active {
+  background: color-mix(in oklab, var(--accent) 20%, var(--panel));
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--glow);
+}
+.note-btn .dur-label {
+  position: absolute; bottom: 1px; right: 3px;
+  font-family: var(--mono); font-size: 7px; color: var(--muted);
+  pointer-events: none;
+}
+.note-btn.active .dur-label { color: var(--accent); }
+
+/* Separator line in tray */
+.tray-sep {
+  width: 24px; height: 1px;
+  background: var(--line); margin: 3px 0;
+}
+
+/* Pick direction buttons */
+.pick-btn {
+  width: 36px; height: 28px;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel2); color: var(--muted);
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  transition: background .1s, border-color .1s;
+}
+.pick-btn:hover { border-color: var(--accent); }
+.pick-btn.active {
+  background: color-mix(in oklab, var(--accent2) 18%, var(--panel));
+  border-color: var(--accent2); color: var(--accent2);
+}
+
+/* ---- TABS ---- */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 12px; font-size: 12px; cursor: pointer;
+  background: var(--panel2); user-select: none; font-weight: 500;
+}
+.tab.active {
+  background: color-mix(in oklab, var(--accent) 18%, var(--panel));
+  border-color: var(--accent); font-weight: 700; color: var(--accent);
+}
+
+/* ============================================================
+   MEASURES — SINGLE COLUMN vertical stack
+   ============================================================ */
+.editor-content { padding: 12px; }
+
+.measures-stack {
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.measure-box {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel2); overflow: hidden; position: relative;
+  transition: outline-color .1s;
+}
+.measure-box.active {
+  outline: 2px solid var(--accent); outline-offset: -1px;
+}
+.measure-label {
+  padding: 5px 10px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.measure-label b { color: var(--text); font-weight: 700; }
+.measure-label .section-badge {
+  font-size: 10px; padding: 1px 7px; border-radius: 999px;
+  font-weight: 600;
+}
+.section-badge.sec-a {
+  background: color-mix(in oklab, var(--accent) 15%, var(--panel));
+  color: var(--accent);
+}
+.section-badge.sec-b {
+  background: color-mix(in oklab, var(--accent2) 15%, var(--panel));
+  color: var(--accent2);
+}
+.section-badge.sec-ci {
+  background: color-mix(in oklab, var(--muted) 15%, var(--panel));
+  color: var(--muted);
+}
+
+.sheet-wrap { padding: 6px 8px; }
+.sheet-wrap svg {
+  width: 100%; height: auto; display: block;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--panel) 40%, var(--panel2));
+  border: 1px solid color-mix(in oklab, var(--line) 60%, transparent);
+  cursor: crosshair;
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.statusbar {
+  padding: 8px 14px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* ============================================================
+   SIDE PANEL
+   ============================================================ */
+.side { display: grid; gap: 14px; align-content: start; }
+
+/* ---- CHORD PICKER ---- */
+.neck-box { padding: 12px; display: grid; gap: 10px; }
+.neck {
+  border: 1px solid var(--line);
+  background: linear-gradient(165deg, color-mix(in oklab, #8b6e3e 10%, var(--panel2)), var(--panel2));
+  border-radius: var(--radius); overflow: hidden; position: relative;
+}
+.nut {
+  position: absolute; left: 44px; top: 0; bottom: 0; width: 4px;
+  background: color-mix(in oklab, var(--text) 25%, #e8d8b8);
+  opacity: .5; pointer-events: none;
+}
+.fret-head {
+  display: grid; grid-template-columns: 44px repeat(13, 1fr);
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in oklab, var(--panel) 50%, transparent);
+}
+.fret-head div {
+  padding: 4px 2px; text-align: center;
+  border-right: 1px solid color-mix(in oklab, var(--line) 50%, transparent);
+  user-select: none;
+}
+.fret-grid {
+  display: grid; grid-template-columns: 44px repeat(13, 1fr);
+}
+.str-label {
+  padding: 6px 6px; text-align: right;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: color-mix(in oklab, var(--panel) 40%, transparent);
+  display: flex; align-items: center; justify-content: flex-end;
+  user-select: none;
+}
+.fret-cell {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid color-mix(in oklab, var(--line) 60%, transparent);
+  border-bottom: 1px solid var(--line);
+  cursor: pointer; position: relative; user-select: none;
+}
+.fret-cell .string-wire {
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: color-mix(in oklab, var(--text) 22%, transparent);
+  pointer-events: none;
+}
+.fret-cell .finger {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--accent); border: 1.5px solid color-mix(in oklab, var(--accent) 70%, #fff);
+  box-shadow: 0 3px 10px rgba(0,0,0,.25);
+  display: none; z-index: 2;
+}
+.fret-cell.on .finger { display: block; }
+
+.chord-info { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.chord-info .name { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+.chord-info .alts { font-size: 12px; color: var(--muted); }
+.chord-info .notes { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+.chord-lib { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.chord-chip {
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 0; text-align: center; font-size: 12px; font-weight: 600;
+  cursor: pointer; background: var(--panel2); user-select: none;
+  transition: background .1s, border-color .1s;
+}
+.chord-chip:hover { border-color: var(--accent); }
+.chord-chip.active {
+  background: color-mix(in oklab, var(--accent) 18%, var(--panel));
+  border-color: var(--accent); color: var(--accent);
+}
+
+/* ============================================================
+   RUN LIBRARY
+   ============================================================ */
+.run-lib { padding: 12px; display: grid; gap: 10px; }
+.run-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.run-chip {
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 10px; cursor: pointer; user-select: none;
+  background: var(--panel2);
+  transition: background .1s, border-color .1s;
+}
+.run-chip:hover { border-color: var(--accent); }
+.run-chip .run-name {
+  font-weight: 600; font-size: 12px; margin-bottom: 2px;
+}
+.run-chip .run-tab {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.run-chip.user-run {
+  border-style: dashed;
+}
+.run-actions {
+  display: flex; gap: 6px; margin-top: 6px;
+}
+
+.keyhint { padding: 12px; font-size: 11px; color: var(--muted); line-height: 1.6; }
+.keyhint kbd { margin: 0 1px; }
+</style>
+</head>
+
+<body data-theme="olive">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-pick"></div>
+      <span class="logo-text">Flatpickr</span>
+      <span class="logo-sub">bluegrass jam</span>
+    </div>
+
+    <div class="pill">
+      <label>Title</label>
+      <input id="inTitle" type="text" value="New Tune"/>
+    </div>
+    <div class="pill">
+      <label>Key</label>
+      <select id="inKey">
+        <option>G</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
+        <option>Am</option><option>Bm</option><option>Cm</option><option>Dm</option><option>Em</option><option>Fm</option>
+      </select>
+    </div>
+    <div class="pill">
+      <label>BPM</label>
+      <input id="inBpm" type="number" min="40" max="280" value="120"/>
+    </div>
+    <div class="pill">
+      <label>Time</label>
+      <select id="inTime">
+        <option value="4/4">4/4</option><option value="3/4">3/4</option><option value="2/4">2/4</option>
+      </select>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="themes" id="themeBar">
+      <span class="swatch-label">Theme&nbsp;</span>
+    </div>
+
+    <button class="btn" id="btnExport" title="Export song as JSON">Export</button>
+    <button class="btn" id="btnImport" title="Import song from JSON">Import</button>
+    <input type="file" id="fileImport" accept=".json" style="display:none"/>
+  </div>
+</header>
+
+<!-- ============================================================
+     CONTROLS ROW
+     ============================================================ -->
+<div class="controls-row">
+  <button id="btnMetro" class="btn hot">
+    <span class="metro-dot" id="metroDot"></span>
+    <span class="metro-label" id="metroLabel">▶ Start</span>
+  </button>
+  <div class="pill">
+    <label>Sound</label>
+    <select id="inMetroSound">
+      <option value="wood">Wood</option><option value="beep">Beep</option>
+      <option value="hat">Hi-hat</option><option value="block">Block</option>
+    </select>
+  </div>
+
+  <button id="btnCountIn" class="btn">Count-in: OFF</button>
+  <button id="btnAVar" class="btn">A var: OFF</button>
+  <button id="btnBVar" class="btn">B var: OFF</button>
+  <button id="btnClear" class="btn danger">Clear bar</button>
+  <button id="btnAddBar" class="btn">+ Bar</button>
+  <button id="btnDelBar" class="btn danger">− Bar</button>
+
+  <div class="spacer"></div>
+  <div class="hint" id="helpLine">
+    <kbd>Space</kbd> metro · <kbd>.</kbd> rest · <kbd>⌫</kbd> delete · arrows navigate
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
+<div class="main">
+  <!-- EDITOR CARD -->
+  <section class="card" id="editorCard">
+    <div class="card-head">
+      <div class="tabs" id="sectionTabs"></div>
+      <div class="tabs" id="variantTabs" style="display:none;">
+        <div class="tab" id="tabMain">Main</div>
+        <div class="tab" id="tabVar">Var</div>
+      </div>
+    </div>
+
+    <div class="editor-layout">
+      <!-- NOTE TYPE TRAY -->
+      <div class="note-tray" id="noteTray">
+        <div class="note-tray-label">Note</div>
+        <!-- filled by JS -->
+      </div>
+
+      <!-- MEASURES AREA -->
+      <div class="editor-content">
+        <div class="measures-stack" id="measuresGrid"></div>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span id="statusL">—</span>
+      <span id="statusR">—</span>
+    </div>
+  </section>
+
+  <!-- SIDE PANEL -->
+  <aside class="side">
+    <!-- CHORD PICKER -->
+    <section class="card">
+      <div class="card-head">
+        <b>Chord Picker</b>
+        <button id="btnNeckClear" class="btn">Clear</button>
+      </div>
+      <div class="neck-box">
+        <div class="chord-info">
+          <span class="name" id="chordName">—</span>
+          <span class="alts" id="chordAlts"></span>
+        </div>
+        <div class="chord-info">
+          <span class="notes" id="chordNotes">—</span>
+        </div>
+        <div class="neck">
+          <div class="nut"></div>
+          <div class="fret-head" id="fretHead"></div>
+          <div class="fret-grid" id="fretGrid"></div>
+        </div>
+        <div style="margin-top:6px;">
+          <div class="hint" style="margin-bottom:6px;">Chord library</div>
+          <div class="chord-lib" id="chordLib"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RUN LIBRARY -->
+    <section class="card">
+      <div class="card-head">
+        <b>Run Library</b>
+        <div style="display:flex;gap:6px;">
+          <button id="btnSaveRun" class="btn" title="Save current bar as a run">Save bar</button>
+          <button id="btnClearRuns" class="btn danger" title="Clear saved runs">Clear saved</button>
+        </div>
+      </div>
+      <div class="run-lib">
+        <div class="hint">Click a run to insert at cursor position.</div>
+        <div class="run-grid" id="runGrid"></div>
+      </div>
+    </section>
+
+    <!-- KEYBOARD HINTS -->
+    <section class="card">
+      <div class="card-head"><b>Keyboard</b></div>
+      <div class="keyhint">
+        Click a position in the measure, type fret number (two digits for 10+).
+        Duration & pick: use the tray on the left, or keys
+        <kbd>W</kbd><kbd>H</kbd><kbd>Q</kbd><kbd>E</kbd><kbd>S</kbd> and
+        <kbd>U</kbd>/<kbd>D</kbd>/<kbd>N</kbd>.
+        <kbd>.</kbd> rest · <kbd>Backspace</kbd> delete · Arrows navigate ·
+        <kbd>Space</kbd> metronome.
+      </div>
+    </section>
+  </aside>
+</div>
+
+<!-- ============================================================
+     ALL JAVASCRIPT
+     ============================================================ -->
+<script>
+// ================================================================
+// §1 — LAYOUT CONFIG
+// ================================================================
+const LAYOUT = Object.freeze({
+  svgW: 720, svgH: 190,
+  pad: 12,
+  clefSpace: 20,
+  get x0()  { return this.pad + this.clefSpace; },
+  get x1()  { return this.svgW - this.pad; },
+  get usableW() { return this.x1 - this.x0; },
+
+  staffTop: 16,
+  staffLineGap: 7,
+  staffLines: 5,
+  get staffBottom() { return this.staffTop + (this.staffLines - 1) * this.staffLineGap; },
+
+  tabGap: 28,
+  get tabTop() { return this.staffBottom + this.tabGap; },
+  tabLineGap: 7,
+  tabStrings: 6,
+  get tabBottom() { return this.tabTop + (this.tabStrings - 1) * this.tabLineGap; },
+
+  pickY: 6,
+});
+
+// ================================================================
+// §2 — CONSTANTS & UTILITIES
+// ================================================================
+const STRINGS   = ['e','B','G','D','A','E'];
+const STRING_CT = 6;
+const OPEN_MIDI = [64, 59, 55, 50, 45, 40];
+const OPEN_PC   = [ 4, 11,  7,  2,  9,  4];
+const PC_SHARP  = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const PC_FLAT   = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+const DUR = Object.freeze({ W:64, H:32, Q:16, E:8, S:4 });
+const DUR_NAMES  = { 64:'whole', 32:'half', 16:'quarter', 8:'eighth', 4:'16th' };
+const DUR_GLYPHS = { 64:'𝅝', 32:'𝅗𝅥', 16:'♩', 8:'♪', 4:'♬' };
+const DUR_KEYS   = ['W','H','Q','E','S'];
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function ticksPerBar(ts) {
+  const [n, d] = ts.split('/').map(Number);
+  return n * 16 * (4 / d);
+}
+function beatCount(ts) { return parseInt(ts.split('/')[0], 10); }
+
+function pcName(pc, key) {
+  const flats = ['F','Bb','Eb','Ab','Db','Gb','Cm','Dm','Fm','Bbm','Ebm','Abm'];
+  return (flats.includes(key) ? PC_FLAT : PC_SHARP)[pc % 12];
+}
+function midiFromString(si, fret) { return OPEN_MIDI[si] + fret; }
+
+function staffY(midi) {
+  const ref = LAYOUT.staffTop + 4 * LAYOUT.staffLineGap;
+  return ref - (midi - 64) * (LAYOUT.staffLineGap * 0.28);
+}
+
+// ================================================================
+// §3 — SONG DATA MODEL
+// ================================================================
+function newMeasure() { return { events: [] }; }
+
+const song = {
+  title: 'New Tune', key: 'G', bpm: 120, timeSig: '4/4',
+  countInEnabled: false, aVarEnabled: false, bVarEnabled: false,
+  A:  { main: [newMeasure(), newMeasure()], var: [newMeasure(), newMeasure()] },
+  B:  { main: [newMeasure(), newMeasure()], var: [newMeasure(), newMeasure()] },
+  countIn: { main: [newMeasure()], var: [newMeasure()] },
+};
+
+function ensureMeasure(secKey, layerKey, idx) {
+  const sec = song[secKey];
+  while (sec[layerKey].length <= idx) sec[layerKey].push(newMeasure());
+}
+function syncLayers(secKey) {
+  const s = song[secKey], L = s.main.length;
+  while (s.var.length < L) s.var.push(newMeasure());
+  while (s.var.length > L) s.var.pop();
+}
+
+// ================================================================
+// §4 — EDITOR STATE
+// ================================================================
+const ed = {
+  section: 'A', layer: 'main',
+  mi: 0, tick: 0, si: 0,
+  dur: DUR.Q, pick: 'none',
+  pendingDigits: '', pendingTimer: null,
+};
+
+function secObj()  { return song[ed.section]; }
+function secLen()  { return secObj().main.length; }
+function isLast()  { return ed.mi === secLen() - 1; }
+function varOk()   {
+  if (ed.section === 'A') return song.aVarEnabled && isLast();
+  if (ed.section === 'B') return song.bVarEnabled && isLast();
+  return false;
+}
+function curMeasure() {
+  ensureMeasure(ed.section, ed.layer, ed.mi);
+  return secObj()[ed.layer][ed.mi];
+}
+function barTicks() { return ticksPerBar(song.timeSig); }
+
+// ================================================================
+// §5 — DOM REFS
+// ================================================================
+const $ = id => document.getElementById(id);
+const elTitle      = $('inTitle');
+const elKey        = $('inKey');
+const elBpm        = $('inBpm');
+const elTime       = $('inTime');
+const elBtnMetro   = $('btnMetro');
+const elMetroDot   = $('metroDot');
+const elMetroLabel = $('metroLabel');
+const elMetroSound = $('inMetroSound');
+const elBtnCountIn = $('btnCountIn');
+const elBtnAVar    = $('btnAVar');
+const elBtnBVar    = $('btnBVar');
+const elBtnClear   = $('btnClear');
+const elBtnAdd     = $('btnAddBar');
+const elBtnDel     = $('btnDelBar');
+const elSectionTabs= $('sectionTabs');
+const elVariantTabs= $('variantTabs');
+const elTabMain    = $('tabMain');
+const elTabVar     = $('tabVar');
+const elGrid       = $('measuresGrid');
+const elStatusL    = $('statusL');
+const elStatusR    = $('statusR');
+const elHelpLine   = $('helpLine');
+const elNoteTray   = $('noteTray');
+
+// ================================================================
+// §6 — NOTE TYPE TRAY (visual duration + pick selector)
+// ================================================================
+function buildNoteTray() {
+  // Keep the label
+  const existingLabel = elNoteTray.querySelector('.note-tray-label');
+  elNoteTray.innerHTML = '';
+  if (existingLabel) elNoteTray.appendChild(existingLabel);
+  else {
+    const lab = document.createElement('div');
+    lab.className = 'note-tray-label'; lab.textContent = 'Note';
+    elNoteTray.appendChild(lab);
+  }
+
+  const durInfo = [
+    { key:'W', glyph:'𝅝',  label:'W' },
+    { key:'H', glyph:'𝅗𝅥',  label:'H' },
+    { key:'Q', glyph:'♩', label:'Q' },
+    { key:'E', glyph:'♪', label:'E' },
+    { key:'S', glyph:'♬', label:'S' },
+  ];
+
+  for (const d of durInfo) {
+    const btn = document.createElement('div');
+    btn.className = 'note-btn' + (ed.dur === DUR[d.key] ? ' active' : '');
+    btn.innerHTML = `${d.glyph}<span class="dur-label">${d.label}</span>`;
+    btn.title = DUR_NAMES[DUR[d.key]];
+    btn.addEventListener('click', () => { ed.dur = DUR[d.key]; render(); });
+    elNoteTray.appendChild(btn);
+  }
+
+  // Separator
+  const sep = document.createElement('div');
+  sep.className = 'tray-sep';
+  elNoteTray.appendChild(sep);
+
+  // Pick label
+  const pickLab = document.createElement('div');
+  pickLab.className = 'note-tray-label'; pickLab.textContent = 'Pick';
+  elNoteTray.appendChild(pickLab);
+
+  const picks = [
+    { key:'down', glyph:'Π', label:'D' },
+    { key:'up',   glyph:'V', label:'U' },
+    { key:'none', glyph:'—', label:'N' },
+  ];
+  for (const p of picks) {
+    const btn = document.createElement('div');
+    btn.className = 'pick-btn' + (ed.pick === p.key ? ' active' : '');
+    btn.textContent = p.glyph;
+    btn.title = p.key;
+    btn.addEventListener('click', () => { ed.pick = p.key; render(); });
+    elNoteTray.appendChild(btn);
+  }
+
+  // Separator
+  const sep2 = document.createElement('div');
+  sep2.className = 'tray-sep';
+  elNoteTray.appendChild(sep2);
+
+  // Rest button
+  const restBtn = document.createElement('div');
+  restBtn.className = 'pick-btn';
+  restBtn.textContent = '·';
+  restBtn.title = 'Rest';
+  restBtn.style.fontSize = '18px';
+  restBtn.addEventListener('click', () => {
+    upsertEvent({ tick:ed.tick, stringIndex:ed.si, fret:0, dur:ed.dur, type:'rest', pick:'none' });
+    advanceCursor(); render();
+  });
+  elNoteTray.appendChild(restBtn);
+
+  // Delete button
+  const delBtn = document.createElement('div');
+  delBtn.className = 'pick-btn';
+  delBtn.textContent = '⌫';
+  delBtn.title = 'Delete';
+  delBtn.style.fontSize = '11px';
+  delBtn.addEventListener('click', () => { deleteAtCursor(); render(); });
+  elNoteTray.appendChild(delBtn);
+}
+
+// ================================================================
+// §7 — THEME SYSTEM
+// ================================================================
+const THEMES = [
+  { id:'olive',     color:'#28282E', ring:'#E8A445', label:'Olive' },
+  { id:'moss',      color:'#242d23', ring:'#A8C256', label:'Moss' },
+  { id:'parchment', color:'#ede7d9', ring:'#b8872e', label:'Parchment' },
+  { id:'herb',      color:'#E8F0DC', ring:'#3D6B4F', label:'Herb' },
+];
+(function initThemes() {
+  const bar = $('themeBar');
+  THEMES.forEach(t => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (t.id === 'olive' ? ' active' : '');
+    sw.style.background = t.color;
+    sw.title = t.label;
+    sw.addEventListener('click', () => {
+      document.body.setAttribute('data-theme', t.id);
+      bar.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      render();
+    });
+    bar.appendChild(sw);
+  });
+})();
+
+// ================================================================
+// §8 — METRONOME (WebAudio — FIXED wood/block sounds)
+// ================================================================
+let audioCtx = null, metroOn = false, metroTimer = null;
+let nextNoteTime = 0, currentBeat = 0;
+const SCHEDULE_AHEAD = 0.12, LOOKAHEAD_MS = 25;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playClick(time, accent) {
+  const mode = elMetroSound.value;
+  const vol = accent ? 0.35 : 0.22;
+
+  if (mode === 'beep') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(accent ? 1320 : 880, time);
+    gain.gain.setValueAtTime(vol, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time); osc.stop(time + 0.09);
+    return;
+  }
+
+  // Noise-based clicks: wood, hat, block
+  // FIX: Use longer buffer, proper gain envelope starting at full volume
+  const duration = 0.08;
+  const bufLen = Math.floor(audioCtx.sampleRate * duration);
+  const buffer = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  // Shape the noise differently per type for character
+  if (mode === 'wood') {
+    // Wood: short burst with resonant decay
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.exp(-i / (audioCtx.sampleRate * 0.012));
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+  } else if (mode === 'block') {
+    // Block: sharper attack, tighter decay
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.exp(-i / (audioCtx.sampleRate * 0.008));
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+  } else {
+    // Hat: longer, sizzly
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.exp(-i / (audioCtx.sampleRate * 0.025));
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+  }
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  if (mode === 'hat') {
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(accent ? 5500 : 7000, time);
+    filter.Q.setValueAtTime(1, time);
+  } else if (mode === 'wood') {
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(accent ? 1100 : 850, time);
+    filter.Q.setValueAtTime(6, time);
+  } else { // block
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(accent ? 1600 : 1300, time);
+    filter.Q.setValueAtTime(8, time);
+  }
+
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(vol, time);
+  gain.gain.linearRampToValueAtTime(0.001, time + duration);
+
+  src.connect(filter).connect(gain).connect(audioCtx.destination);
+  src.start(time);
+  src.stop(time + duration + 0.01);
+}
+
+function schedule() {
+  const secPerBeat = 60 / song.bpm;
+  const bc = beatCount(song.timeSig);
+  while (nextNoteTime < audioCtx.currentTime + SCHEDULE_AHEAD) {
+    playClick(nextNoteTime, (currentBeat % bc) === 0);
+    currentBeat++;
+    nextNoteTime += secPerBeat;
+    elMetroDot.classList.add('pulse');
+    setTimeout(() => elMetroDot.classList.remove('pulse'), 55);
+  }
+}
+
+function startMetro() {
+  ensureAudio(); metroOn = true; currentBeat = 0;
+  nextNoteTime = audioCtx.currentTime + 0.05;
+  metroTimer = setInterval(schedule, LOOKAHEAD_MS);
+  elBtnMetro.classList.add('on');
+  elMetroLabel.textContent = '■ Stop';
+  elMetroLabel.classList.add('running');
+}
+function stopMetro() {
+  metroOn = false;
+  if (metroTimer) clearInterval(metroTimer);
+  metroTimer = null;
+  elBtnMetro.classList.remove('on');
+  elMetroDot.classList.remove('pulse');
+  elMetroLabel.textContent = '▶ Start';
+  elMetroLabel.classList.remove('running');
+}
+elBtnMetro.addEventListener('click', () => metroOn ? stopMetro() : startMetro());
+
+// ================================================================
+// §9 — EDITING OPERATIONS
+// ================================================================
+function upsertEvent(ev) {
+  const m = curMeasure();
+  m.events = m.events.filter(x => !(x.tick === ev.tick && x.stringIndex === ev.stringIndex));
+  m.events.push(ev);
+  m.events.sort((a, b) => a.tick - b.tick || a.stringIndex - b.stringIndex);
+}
+function deleteAtCursor() {
+  const m = curMeasure();
+  m.events = m.events.filter(x => !(x.tick === ed.tick && x.stringIndex === ed.si));
+}
+function advanceCursor() {
+  let nt = ed.tick + ed.dur, nm = ed.mi;
+  if (nt >= barTicks()) { nm++; nt = 0; ensureMeasure(ed.section,'main',nm); ensureMeasure(ed.section,'var',nm); syncLayers(ed.section); }
+  ed.mi = nm; ed.tick = nt;
+  if (!varOk()) ed.layer = 'main';
+}
+function commitPending() {
+  if (!ed.pendingDigits) return;
+  const fret = parseInt(ed.pendingDigits, 10);
+  ed.pendingDigits = '';
+  if (ed.pendingTimer) clearTimeout(ed.pendingTimer);
+  ed.pendingTimer = null;
+  upsertEvent({ tick:ed.tick, stringIndex:ed.si, fret, dur:ed.dur, type:'note', pick:ed.pick });
+  advanceCursor(); render();
+}
+
+// ================================================================
+// §10 — KEYBOARD HANDLER
+// ================================================================
+window.addEventListener('keydown', e => {
+  const tag = (e.target?.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+  if (e.code === 'Space') { e.preventDefault(); metroOn ? stopMetro() : startMetro(); render(); return; }
+
+  const k = e.key.toUpperCase();
+  if ('WHQES'.includes(k) && k.length === 1) { e.preventDefault(); ed.dur = DUR[k]; render(); return; }
+  if (k === 'U') { e.preventDefault(); ed.pick = 'up';   render(); return; }
+  if (k === 'D') { e.preventDefault(); ed.pick = 'down'; render(); return; }
+  if (k === 'N') { e.preventDefault(); ed.pick = 'none'; render(); return; }
+
+  const bt = barTicks();
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); ed.tick = clamp(ed.tick - ed.dur, 0, bt - 1); render(); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); ed.tick = clamp(ed.tick + ed.dur, 0, bt - 1); render(); return; }
+  if (e.key === 'ArrowUp')    { e.preventDefault(); ed.si = clamp(ed.si - 1, 0, 5); render(); return; }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); ed.si = clamp(ed.si + 1, 0, 5); render(); return; }
+
+  if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); deleteAtCursor(); render(); return; }
+
+  if (e.key === '.') {
+    e.preventDefault();
+    upsertEvent({ tick:ed.tick, stringIndex:ed.si, fret:0, dur:ed.dur, type:'rest', pick:'none' });
+    advanceCursor(); render(); return;
+  }
+
+  if (/^[0-9]$/.test(e.key)) {
+    e.preventDefault();
+    ed.pendingDigits += e.key;
+    if (ed.pendingDigits.length > 2) ed.pendingDigits = ed.pendingDigits.slice(-2);
+    if (ed.pendingTimer) clearTimeout(ed.pendingTimer);
+    if (ed.pendingDigits.length >= 2) { commitPending(); return; }
+    ed.pendingTimer = setTimeout(commitPending, 350);
+    elHelpLine.innerHTML = `Typing fret: <kbd>${ed.pendingDigits}</kbd>…`;
+  }
+});
+
+// ================================================================
+// §11 — SVG RENDERER (DOM-based)
+// ================================================================
+const NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function css(prop) {
+  return getComputedStyle(document.body).getPropertyValue(prop).trim();
+}
+
+function renderMeasureSVG(measure, opts) {
+  const { showCursor, activeTick, bt, ts } = opts;
+  const L = LAYOUT;
+  const svg = svgEl('svg', { viewBox:`0 0 ${L.svgW} ${L.svgH}`, xmlns:NS });
+
+  const stroke = css('--text')   || '#D8D8D8';
+  const linec  = css('--line')   || '#3A3A42';
+  const accent = css('--accent') || '#E8A445';
+  const muted  = css('--muted')  || '#888890';
+  const panel  = css('--panel')  || '#28282E';
+
+  const xTick = t => L.x0 + (t / bt) * L.usableW;
+  const bc = beatCount(ts);
+
+  // Staff lines
+  for (let i = 0; i < L.staffLines; i++) {
+    const y = L.staffTop + i * L.staffLineGap;
+    svg.appendChild(svgEl('line', { x1:L.pad, y1:y, x2:L.svgW-L.pad, y2:y, stroke:linec, 'stroke-width':'0.8' }));
+  }
+
+  // TAB lines
+  for (let i = 0; i < L.tabStrings; i++) {
+    const y = L.tabTop + i * L.tabLineGap;
+    svg.appendChild(svgEl('line', { x1:L.pad, y1:y, x2:L.svgW-L.pad, y2:y, stroke:linec, 'stroke-width':'0.8' }));
+  }
+
+  // Clef + TAB label
+  const clef = svgEl('text', { x:L.pad, y:L.staffTop+3*L.staffLineGap, 'font-family':'serif', 'font-size':'16', fill:stroke });
+  clef.textContent = '𝄞'; svg.appendChild(clef);
+
+  const tabLabel = svgEl('text', { x:L.pad+1, y:L.tabTop+2.5*L.tabLineGap+1, 'font-family':css('--mono'), 'font-size':'9', fill:muted, 'font-weight':'600' });
+  tabLabel.textContent = 'TAB'; svg.appendChild(tabLabel);
+
+  // Barlines
+  const bly1 = L.staffTop-4, bly2 = L.tabBottom+4;
+  svg.appendChild(svgEl('line', { x1:L.x0-5, y1:bly1, x2:L.x0-5, y2:bly2, stroke, 'stroke-width':'1.2', opacity:'.5' }));
+  svg.appendChild(svgEl('line', { x1:L.x1, y1:bly1, x2:L.x1, y2:bly2, stroke, 'stroke-width':'1.2', opacity:'.5' }));
+
+  // Beat markers
+  for (let b = 1; b < bc; b++) {
+    const x = xTick(b * (bt / bc));
+    svg.appendChild(svgEl('line', { x1:x, y1:bly1, x2:x, y2:bly2, stroke:linec, 'stroke-width':'0.7', opacity:'.45' }));
+  }
+
+  // Cursor
+  if (showCursor) {
+    const cx = xTick(activeTick);
+    svg.appendChild(svgEl('rect', { x:cx-5, y:bly1, width:10, height:bly2-bly1+8, fill:accent, opacity:'.10', rx:'5' }));
+    const sy = L.tabTop + opts.activeString * L.tabLineGap;
+    svg.appendChild(svgEl('circle', { cx, cy:sy, r:'4', fill:accent, opacity:'.25' }));
+  }
+
+  // Events
+  for (const ev of measure.events) {
+    const x = xTick(ev.tick) + 2;
+    const tabY = L.tabTop + ev.stringIndex * L.tabLineGap;
+
+    if (ev.type === 'note') {
+      const tw = ev.fret >= 10 ? 14 : 9;
+      svg.appendChild(svgEl('rect', { x:x-tw/2-1, y:tabY-5, width:tw+2, height:10, fill:panel, rx:'2', opacity:'.85' }));
+    }
+
+    const tabTxt = svgEl('text', {
+      x, y:tabY+3.5, 'font-family':css('--mono'), 'font-size':'10',
+      fill:ev.type==='rest'?muted:stroke, 'text-anchor':'middle', 'font-weight':'600'
+    });
+    tabTxt.textContent = ev.type === 'rest' ? '·' : ev.fret;
+    svg.appendChild(tabTxt);
+
+    if (ev.type === 'note') {
+      const midi = midiFromString(ev.stringIndex, ev.fret);
+      const y = staffY(midi);
+      const filled = !(ev.dur === DUR.W || ev.dur === DUR.H);
+
+      svg.appendChild(svgEl('ellipse', { cx:x, cy:y, rx:'4.8', ry:'3.4', fill:filled?stroke:panel, stroke, 'stroke-width':'1.1' }));
+
+      // Ledger lines
+      const topLine = L.staffTop, botLine = L.staffBottom;
+      if (y < topLine - L.staffLineGap * 0.4) {
+        for (let ly = topLine - L.staffLineGap; ly >= y - 1; ly -= L.staffLineGap)
+          svg.appendChild(svgEl('line', { x1:x-7, y1:ly, x2:x+7, y2:ly, stroke, 'stroke-width':'0.8' }));
+      }
+      if (y > botLine + L.staffLineGap * 0.4) {
+        for (let ly = botLine + L.staffLineGap; ly <= y + 1; ly += L.staffLineGap)
+          svg.appendChild(svgEl('line', { x1:x-7, y1:ly, x2:x+7, y2:ly, stroke, 'stroke-width':'0.8' }));
+      }
+
+      // Stem
+      const midY = L.staffTop + 2 * L.staffLineGap;
+      const down = y < midY;
+      const stemLen = 20;
+      if (ev.dur !== DUR.W) {
+        const sx = down ? x - 4.6 : x + 4.6;
+        const sy1 = y, sy2 = down ? y + stemLen : y - stemLen;
+        svg.appendChild(svgEl('line', { x1:sx, y1:sy1, x2:sx, y2:sy2, stroke, 'stroke-width':'1.1' }));
+
+        if (ev.dur === DUR.E || ev.dur === DUR.S) {
+          const flagN = ev.dur === DUR.S ? 2 : 1;
+          for (let fi = 0; fi < flagN; fi++) {
+            const dy = fi * 5;
+            const px = sx, py = down ? sy2 - 1 - dy : sy2 + 1 + dy;
+            const dir = down ? 1 : -1;
+            const d = `M ${px} ${py} C ${px+12*dir} ${py+3*dir}, ${px+12*dir} ${py+8*dir}, ${px} ${py+10*dir}`;
+            svg.appendChild(svgEl('path', { d, fill:'none', stroke, 'stroke-width':'1.1' }));
+          }
+        }
+      }
+
+      // Pick mark
+      if (ev.pick && ev.pick !== 'none') {
+        const sym = ev.pick === 'up' ? 'V' : 'Π';
+        const pt = svgEl('text', { x, y:L.pickY, 'text-anchor':'middle', 'font-family':css('--mono'), 'font-size':'10', fill:stroke });
+        pt.textContent = sym; svg.appendChild(pt);
+      }
+    }
+  }
+
+  return svg;
+}
+
+// ================================================================
+// §12 — MAIN RENDER (vertical stacking: all A bars then all B bars)
+// ================================================================
+function render() {
+  // Sync controls
+  elTitle.value = song.title;
+  elKey.value = song.key;
+  elBpm.value = song.bpm;
+  elTime.value = song.timeSig;
+
+  elBtnCountIn.textContent = `Count-in: ${song.countInEnabled ? 'ON' : 'OFF'}`;
+  elBtnCountIn.classList.toggle('on', song.countInEnabled);
+  elBtnAVar.textContent = `A var: ${song.aVarEnabled ? 'ON' : 'OFF'}`;
+  elBtnAVar.classList.toggle('on', song.aVarEnabled);
+  elBtnBVar.textContent = `B var: ${song.bVarEnabled ? 'ON' : 'OFF'}`;
+  elBtnBVar.classList.toggle('on', song.bVarEnabled);
+
+  // Rebuild note tray
+  buildNoteTray();
+
+  // Section tabs
+  elSectionTabs.innerHTML = '';
+  const tabDefs = [];
+  if (song.countInEnabled) tabDefs.push({ key:'countIn', label:'Count-in' });
+  tabDefs.push({ key:'A', label:'A' }, { key:'B', label:'B' });
+  for (const t of tabDefs) {
+    const b = document.createElement('div');
+    b.className = 'tab' + (ed.section === t.key ? ' active' : '');
+    b.textContent = t.label;
+    b.addEventListener('click', () => { ed.section = t.key; ed.mi = 0; ed.tick = 0; ed.si = 0; ed.layer = 'main'; render(); });
+    elSectionTabs.appendChild(b);
+  }
+
+  // Variant tabs
+  const vo = varOk();
+  elVariantTabs.style.display = vo ? '' : 'none';
+  if (!vo) ed.layer = 'main';
+  elTabMain.className = 'tab' + (ed.layer === 'main' ? ' active' : '');
+  elTabVar.className  = 'tab' + (ed.layer === 'var'  ? ' active' : '');
+
+  syncLayers('A'); syncLayers('B');
+
+  // Build vertical measure stack
+  // Show all measures of current section in a single column
+  elGrid.innerHTML = '';
+  const sec = secObj(), layer = ed.layer, bt = barTicks(), total = sec[layer].length;
+  const secLabel = ed.section === 'countIn' ? 'CI' : ed.section;
+  const badgeClass = ed.section === 'A' ? 'sec-a' : ed.section === 'B' ? 'sec-b' : 'sec-ci';
+
+  for (let mi = 0; mi < total; mi++) {
+    const box = document.createElement('div');
+    box.className = 'measure-box' + (mi === ed.mi ? ' active' : '');
+
+    const label = document.createElement('div');
+    label.className = 'measure-label';
+    const layerTag = (vo && mi === total - 1) ? (layer === 'var' ? ' · VAR' : ' · MAIN') : '';
+    const badge = `<span class="section-badge ${badgeClass}">${secLabel}</span>`;
+    label.innerHTML = `<span>${badge} <b>${secLabel}${mi + 1}</b>${layerTag}</span><span>${song.timeSig}</span>`;
+    box.appendChild(label);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'sheet-wrap';
+
+    const svgNode = renderMeasureSVG(sec[layer][mi], {
+      showCursor: mi === ed.mi,
+      activeTick: mi === ed.mi ? ed.tick : -1,
+      activeString: ed.si, bt, ts: song.timeSig
+    });
+
+    svgNode.addEventListener('click', ev => {
+      const rect = svgNode.getBoundingClientRect();
+      const px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+      const scaleX = LAYOUT.svgW / rect.width, scaleY = LAYOUT.svgH / rect.height;
+      const vx = px * scaleX, vy = py * scaleY;
+
+      const tRaw = clamp((vx - LAYOUT.x0) / LAYOUT.usableW, 0, .999);
+      const rawTick = Math.floor(tRaw * bt);
+      const snapped = Math.floor(rawTick / ed.dur) * ed.dur;
+
+      let si = ed.si;
+      if (vy >= LAYOUT.tabTop - 6 && vy <= LAYOUT.tabBottom + 10) {
+        si = clamp(Math.round((vy - LAYOUT.tabTop) / LAYOUT.tabLineGap), 0, 5);
+      }
+
+      ed.mi = mi; ed.tick = snapped; ed.si = si;
+      if (!varOk()) ed.layer = 'main';
+      render();
+    });
+
+    wrap.appendChild(svgNode);
+    box.appendChild(wrap);
+    elGrid.appendChild(box);
+  }
+
+  // Status bar
+  const sn = ed.section === 'countIn' ? 'Count-in' : ed.section;
+  const ln = vo ? (ed.layer === 'var' ? 'Var' : 'Main') : 'Main';
+  elStatusL.textContent = `${song.title} · ${sn} · bar ${ed.mi+1}/${total} · ${ln} · ${STRINGS[ed.si]} · tick ${ed.tick+1}/${bt}`;
+  elStatusR.textContent = `${DUR_NAMES[ed.dur]} · pick: ${ed.pick} · ${song.bpm} BPM · metro: ${metroOn?'ON':'OFF'}`;
+}
+
+// ================================================================
+// §13 — CONTROL EVENT WIRING
+// ================================================================
+elTitle.addEventListener('input', () => { song.title = elTitle.value; render(); });
+elKey.addEventListener('change', () => { song.key = elKey.value; renderNeck(); render(); });
+elBpm.addEventListener('change', () => { song.bpm = clamp(parseInt(elBpm.value||'120',10),40,280); render(); });
+elTime.addEventListener('change', () => { song.timeSig = elTime.value; ed.tick = clamp(ed.tick, 0, barTicks()-1); render(); });
+
+elBtnCountIn.addEventListener('click', () => {
+  song.countInEnabled = !song.countInEnabled;
+  if (!song.countInEnabled && ed.section === 'countIn') { ed.section = 'A'; ed.mi = 0; ed.layer = 'main'; }
+  render();
+});
+elBtnAVar.addEventListener('click', () => { song.aVarEnabled = !song.aVarEnabled; syncLayers('A'); render(); });
+elBtnBVar.addEventListener('click', () => { song.bVarEnabled = !song.bVarEnabled; syncLayers('B'); render(); });
+elBtnClear.addEventListener('click', () => { curMeasure().events = []; render(); });
+
+elBtnAdd.addEventListener('click', () => { secObj().main.push(newMeasure()); syncLayers(ed.section); render(); });
+elBtnDel.addEventListener('click', () => {
+  const sec = secObj();
+  if (sec.main.length <= 1) return;
+  sec.main.pop(); syncLayers(ed.section);
+  ed.mi = clamp(ed.mi, 0, sec.main.length - 1); render();
+});
+
+elTabMain.addEventListener('click', () => { ed.layer = 'main'; render(); });
+elTabVar.addEventListener('click',  () => { ed.layer = 'var';  render(); });
+
+// ================================================================
+// §14 — EXPORT / IMPORT
+// ================================================================
+$('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(song, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (song.title || 'flatpickr').replace(/\s+/g, '_') + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+$('btnImport').addEventListener('click', () => $('fileImport').click());
+$('fileImport').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      Object.assign(song, data);
+      ed.section = 'A'; ed.mi = 0; ed.tick = 0; ed.si = 0; ed.layer = 'main';
+      render(); renderNeck();
+    } catch { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file); e.target.value = '';
+});
+
+// ================================================================
+// §15 — CHORD PICKER
+// ================================================================
+const chordShape = Array.from({ length: STRING_CT }, () => null);
+
+const CHORD_TEMPLATES = [
+  { name:'',     iv:[0,4,7] },
+  { name:'m',    iv:[0,3,7] },
+  { name:'7',    iv:[0,4,7,10] },
+  { name:'m7',   iv:[0,3,7,10] },
+  { name:'maj7', iv:[0,4,7,11] },
+  { name:'dim',  iv:[0,3,6] },
+  { name:'aug',  iv:[0,4,8] },
+  { name:'sus2', iv:[0,2,7] },
+  { name:'sus4', iv:[0,5,7] },
+  { name:'6',    iv:[0,4,7,9] },
+  { name:'m6',   iv:[0,3,7,9] },
+  { name:'9',    iv:[0,4,7,10,14] },
+  { name:'add9', iv:[0,2,4,7] },
+];
+
+function chordPCs() {
+  const pcs = new Set(), descs = [];
+  for (let i = 0; i < STRING_CT; i++) {
+    if (chordShape[i] === null) continue;
+    const pc = (OPEN_PC[i] + chordShape[i]) % 12;
+    pcs.add(pc); descs.push(`${STRINGS[i]}:${chordShape[i]}→${pcName(pc, song.key)}`);
+  }
+  return { pcs:[...pcs].sort((a,b)=>a-b), descs };
+}
+
+function guessChord(pcs) {
+  if (!pcs.length) return { best:'—', alts:[] };
+  const set = new Set(pcs);
+  const bassPC = pcs[0];
+  const candidates = [];
+  for (let root = 0; root < 12; root++) {
+    for (const tpl of CHORD_TEMPLATES) {
+      const needed = tpl.iv.map(i => (root + i) % 12);
+      const hits = needed.filter(pc => set.has(pc)).length;
+      const missing = needed.length - hits;
+      const extras = pcs.length - hits;
+      let score = (hits * 10) - (missing * 18) - (extras * 3);
+      if (root === bassPC) score += 5;
+      if (!set.has(root)) score -= 8;
+      candidates.push({ label:`${pcName(root, song.key)}${tpl.name}`, score });
+    }
+  }
+  candidates.sort((a, b) => b.score - a.score);
+  const best = candidates[0];
+  const seen = new Set([best.label]);
+  const alts = [];
+  for (const c of candidates) {
+    if (alts.length >= 3) break;
+    if (seen.has(c.label) || c.score < best.score - 10) continue;
+    seen.add(c.label); alts.push(c.label);
+  }
+  return { best:best.label, alts };
+}
+
+function updateChordInfo() {
+  const { pcs, descs } = chordPCs();
+  const g = guessChord(pcs);
+  $('chordName').textContent = g.best;
+  $('chordAlts').textContent = g.alts.length ? `(${g.alts.join(' / ')})` : '';
+  $('chordNotes').textContent = descs.length ? descs.join('  ') : '—';
+}
+
+function renderNeck() {
+  const head = $('fretHead'); head.innerHTML = '';
+  const blank = document.createElement('div'); blank.textContent = '';
+  head.appendChild(blank);
+  for (let f = 0; f <= 12; f++) { const d = document.createElement('div'); d.textContent = f; head.appendChild(d); }
+
+  const grid = $('fretGrid'); grid.innerHTML = '';
+  for (let si = 0; si < STRING_CT; si++) {
+    const lab = document.createElement('div');
+    lab.className = 'str-label'; lab.textContent = STRINGS[si]; grid.appendChild(lab);
+    for (let f = 0; f <= 12; f++) {
+      const cell = document.createElement('div');
+      cell.className = 'fret-cell' + (chordShape[si] === f ? ' on' : '');
+      const wire = document.createElement('div'); wire.className = 'string-wire';
+      const dot  = document.createElement('div'); dot.className = 'finger';
+      cell.appendChild(wire); cell.appendChild(dot);
+      cell.addEventListener('click', () => { chordShape[si] = (chordShape[si]===f)?null:f; updateChordInfo(); renderNeck(); });
+      grid.appendChild(cell);
+    }
+  }
+  updateChordInfo();
+}
+
+const CHORD_LIB = [
+  { name:'G',  s:[3,0,0,0,2,3] },   { name:'C',  s:[0,1,0,2,3,null] },
+  { name:'D',  s:[2,3,2,0,null,null]}, { name:'Em', s:[0,0,0,2,2,0] },
+  { name:'A',  s:[0,2,2,2,0,null] }, { name:'E',  s:[0,0,1,2,2,0] },
+  { name:'Am', s:[0,1,2,2,0,null] }, { name:'Dm', s:[1,3,2,0,null,null] },
+  { name:'G7', s:[1,0,0,0,2,3] },   { name:'C7', s:[0,1,3,2,3,null] },
+  { name:'D7', s:[2,1,2,0,null,null]}, { name:'A7', s:[0,2,0,2,0,null] },
+  { name:'E7', s:[0,0,1,0,2,0] },   { name:'B7', s:[2,0,2,1,2,null] },
+  { name:'F',  s:[1,1,2,3,null,null]}, { name:'Bm', s:[2,3,4,4,2,null] },
+];
+
+function renderChordLib() {
+  const el = $('chordLib'); el.innerHTML = '';
+  for (const c of CHORD_LIB) {
+    const chip = document.createElement('div');
+    chip.className = 'chord-chip'; chip.textContent = c.name;
+    chip.addEventListener('click', () => {
+      for (let i = 0; i < STRING_CT; i++) chordShape[i] = c.s[i] ?? null;
+      el.querySelectorAll('.chord-chip').forEach(x => x.classList.remove('active'));
+      chip.classList.add('active'); renderNeck();
+    });
+    el.appendChild(chip);
+  }
+}
+
+$('btnNeckClear').addEventListener('click', () => {
+  for (let i = 0; i < STRING_CT; i++) chordShape[i] = null;
+  $('chordLib').querySelectorAll('.chord-chip').forEach(x => x.classList.remove('active'));
+  renderNeck();
+});
+
+// ================================================================
+// §16 — RUN LIBRARY
+// ================================================================
+// Built-in runs: common bluegrass runs as event sequences
+const BUILTIN_RUNS = [
+  {
+    name: 'G-run (classic)',
+    key: 'G',
+    events: [
+      { tick:0,  stringIndex:3, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:3, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:2, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:1, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:0, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:1, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:0, fret:0, dur:16, type:'note', pick:'down' },
+    ]
+  },
+  {
+    name: 'G-run (alt)',
+    key: 'G',
+    events: [
+      { tick:0,  stringIndex:4, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:3, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:3, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:2, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:1, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:0, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:0, fret:0, dur:16, type:'note', pick:'down' },
+    ]
+  },
+  {
+    name: 'C-run',
+    key: 'C',
+    events: [
+      { tick:0,  stringIndex:4, fret:3, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:3, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:3, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:2, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:1, fret:1, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:0, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:1, fret:1, dur:16, type:'note', pick:'down' },
+    ]
+  },
+  {
+    name: 'D-run',
+    key: 'D',
+    events: [
+      { tick:0,  stringIndex:3, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:3, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:2, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:1, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:0, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:0, fret:3, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:0, fret:2, dur:16, type:'note', pick:'down' },
+    ]
+  },
+  {
+    name: 'A-run',
+    key: 'A',
+    events: [
+      { tick:0,  stringIndex:4, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:4, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:3, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:3, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:2, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:1, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:1, fret:2, dur:16, type:'note', pick:'down' },
+    ]
+  },
+  {
+    name: 'E-run',
+    key: 'E',
+    events: [
+      { tick:0,  stringIndex:5, fret:0, dur:8, type:'note', pick:'down' },
+      { tick:8,  stringIndex:5, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:16, stringIndex:4, fret:2, dur:8, type:'note', pick:'down' },
+      { tick:24, stringIndex:3, fret:2, dur:8, type:'note', pick:'up' },
+      { tick:32, stringIndex:2, fret:1, dur:8, type:'note', pick:'down' },
+      { tick:40, stringIndex:1, fret:0, dur:8, type:'note', pick:'up' },
+      { tick:48, stringIndex:0, fret:0, dur:16, type:'note', pick:'down' },
+    ]
+  },
+];
+
+function getUserRuns() {
+  try { return JSON.parse(localStorage.getItem('flatpickr_runs') || '[]'); }
+  catch { return []; }
+}
+function saveUserRuns(runs) {
+  localStorage.setItem('flatpickr_runs', JSON.stringify(runs));
+}
+
+function runTabPreview(events) {
+  // Build a compact tab preview string
+  const sorted = [...events].sort((a,b) => a.tick - b.tick);
+  return sorted.map(e => `${STRINGS[e.stringIndex]}${e.fret}`).join(' ');
+}
+
+function insertRunAtCursor(run) {
+  const m = curMeasure();
+  for (const ev of run.events) {
+    const newEv = { ...ev, tick: ev.tick };
+    m.events = m.events.filter(x => !(x.tick === newEv.tick && x.stringIndex === newEv.stringIndex));
+    m.events.push(newEv);
+  }
+  m.events.sort((a,b) => a.tick - b.tick || a.stringIndex - b.stringIndex);
+  render();
+}
+
+function renderRunLibrary() {
+  const grid = $('runGrid');
+  grid.innerHTML = '';
+
+  // Built-in runs
+  for (const run of BUILTIN_RUNS) {
+    const chip = document.createElement('div');
+    chip.className = 'run-chip';
+    chip.innerHTML = `<div class="run-name">${run.name}</div><div class="run-tab">${runTabPreview(run.events)}</div>`;
+    chip.addEventListener('click', () => insertRunAtCursor(run));
+    grid.appendChild(chip);
+  }
+
+  // User runs
+  const userRuns = getUserRuns();
+  for (let i = 0; i < userRuns.length; i++) {
+    const run = userRuns[i];
+    const chip = document.createElement('div');
+    chip.className = 'run-chip user-run';
+    chip.innerHTML = `<div class="run-name">✦ ${run.name}</div><div class="run-tab">${runTabPreview(run.events)}</div>`;
+    chip.addEventListener('click', () => insertRunAtCursor(run));
+    grid.appendChild(chip);
+  }
+}
+
+$('btnSaveRun').addEventListener('click', () => {
+  const m = curMeasure();
+  if (!m.events.length) { alert('Current bar is empty.'); return; }
+  const name = prompt('Name this run:', `${song.key}-run (custom)`);
+  if (!name) return;
+  const runs = getUserRuns();
+  runs.push({ name, key: song.key, events: JSON.parse(JSON.stringify(m.events)) });
+  saveUserRuns(runs);
+  renderRunLibrary();
+});
+
+$('btnClearRuns').addEventListener('click', () => {
+  if (!confirm('Clear all saved custom runs?')) return;
+  saveUserRuns([]);
+  renderRunLibrary();
+});
+
+// ================================================================
+// §17 — BOOT
+// ================================================================
+renderChordLib();
+renderNeck();
+renderRunLibrary();
+render();
+</script>
+</body>
+</html>
