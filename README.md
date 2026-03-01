@@ -3,7 +3,7 @@
 **Bluegrass jam workstation — notation, tablature, and chord tools in a single HTML file.**
 
 Flatpickr is a browser-based tool for writing, editing, and practicing bluegrass flatpicking arrangements. It renders standard notation and guitar tablature side-by-side in SVG, with a built-in metronome, chord identifier, and run library. Everything lives in one self-contained HTML file with zero dependencies — just open it in a browser.
-
+**[Live demo →](https://dimfield-git.github.io/flatpickr/)**
 ## Features
 
 - **Notation + TAB editor** — Click to place notes on a combined treble staff and 6-string TAB. Supports whole, half, quarter, eighth, and sixteenth note durations with pick direction marks (upstroke/downstroke).
