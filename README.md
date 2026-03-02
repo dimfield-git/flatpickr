@@ -1,4 +1,4 @@
-<img width="1536" height="1024" alt="ChatGPT Image Mar 2, 2026, 08_29_58 AM" src="https://github.com/user-attachments/assets/086da5bb-643c-4e5e-ada9-ffa0553d2af8" />
+<img width="1536" height="1024" alt="ChatGPT Image Mar 2, 2026, 08_34_37 AM" src="https://github.com/user-attachments/assets/bee93a72-7a7f-40fd-8e6f-978ce4b76f2b" />
 
 **Bluegrass jam workstation — notation, tablature, and chord tools in a single HTML file.**
 
