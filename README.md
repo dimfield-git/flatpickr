@@ -1,4 +1,4 @@
-# Flatpickr
+<img width="1536" height="1024" alt="ChatGPT Image Mar 2, 2026, 08_29_58 AM" src="https://github.com/user-attachments/assets/086da5bb-643c-4e5e-ada9-ffa0553d2af8" />
 
 **Bluegrass jam workstation — notation, tablature, and chord tools in a single HTML file.**
 
